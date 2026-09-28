@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ศูนย์ภัยพิบัติและช่วยเหลือ อ.เมืองกำแพงเพชร</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans pb-24">
+
+    <!-- Header -->
+    <header class="bg-red-700 text-white p-5 rounded-b-3xl shadow-lg text-center">
+        <h1 class="text-lg font-black">🚨 ศูนย์ภัยพิบัติ อ.เมืองกำแพงเพชร</h1>
+        <p class="text-xs opacity-90 mt-1">อัปเดตสถานการณ์น้ำรายตำบล & แจ้ง SOS</p>
+    </header>
+
+    <main class="max-w-md mx-auto p-4 space-y-4">
+        
+        <!-- SOS Button -->
+        <button onclick="openSosModal()" class="w-full bg-red-600 hover:bg-red-700 text-white font-extrabold py-4 px-6 rounded-2xl shadow-xl flex items-center justify-center space-x-2 text-base animate-bounce">
+            <span>🚨 กดปุ่มขอความช่วยเหลือด่วน (SOS)</span>
+        </button>
+
+        <!-- Form Add Report -->
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+            <h2 class="font-bold text-xs text-blue-600">➕ เพิ่มรายงานสถานการณ์น้ำในพื้นที่</h2>
+            <input type="text" id="reportTitle" placeholder="หัวข้อสถานการณ์ (เช่น น้ำป่าหลาก ต.นครชุม)" class="w-full p-2.5 border rounded-xl text-xs">
+            <select id="reportSubDistrict" class="w-full p-2.5 border rounded-xl text-xs bg-white">
+                <option value="ทม.กำแพงเพชร (ต.ในเมือง)">ทม.กำแพงเพชร (ต.ในเมือง)</option>
+                <option value="ทม.หนองปลิง (ต.หนองปลิง)">ทม.หนองปลิง (ต.หนองปลิง)</option>
+                <option value="ทต.นครชุม">ทต.นครชุม</option>
+                <option value="ทต.คลองแม่ลาย">ทต.คลองแม่ลาย</option>
+                <option value="อบต.ไตรตรึงษ์">อบต.ไตรตรึงษ์</option>
+                <option value="อบต.อ่างทอง">อบต.อ่างทอง</option>
+                <option value="อบต.ลานดอกไม้">อบต.ลานดอกไม้</option>
+            </select>
+            <textarea id="reportDetail" placeholder="รายละเอียดเพิ่มเติม..." rows="2" class="w-full p-2.5 border rounded-xl text-xs"></textarea>
+            <input type="text" id="reportSource" placeholder="แหล่งอ้างอิง (เช่น เทศบาล / อาสาสมัคร)" class="w-full p-2.5 border rounded-xl text-xs">
+            <button onclick="submitReport()" class="w-full bg-blue-600 text-white font-bold py-2.5 rounded-xl text-xs shadow">เผยแพร่สถานการณ์</button>
+        </div>
+
+        <!-- Feed Section -->
+        <div class="space-y-3">
+            <h2 class="font-bold text-sm text-slate-700">📌 ฟีดสถานการณ์ล่าสุด</h2>
+            <div id="feedContainer" class="space-y-3">
+                <p class="text-xs text-slate-400 text-center">พร้อมรับข้อมูลจากระบบ...</p>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- SOS Modal -->
+    <div id="sosModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center p-4 z-50">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-5 shadow-2xl space-y-3">
+            <div class="flex justify-between items-center">
+                <h3 class="text-red-600 font-bold text-base">⚠️ แจ้งขอความช่วยเหลือ</h3>
+                <button onclick="closeSosModal()" class="text-slate-400 font-bold">✕</button>
+            </div>
+            <input type="text" id="sosName" placeholder="ชื่อ-นามสกุล ผู้ประสบภัย" class="w-full p-2.5 border rounded-xl text-xs">
+            <input type="tel" id="sosPhone" placeholder="เบอร์โทรศัพท์ติดต่อกลับ" class="w-full p-2.5 border rounded-xl text-xs">
+            <select id="sosSubDistrict" class="w-full p-2.5 border rounded-xl text-xs bg-white">
+                <option value="ทม.กำแพงเพชร">ทม.กำแพงเพชร</option>
+                <option value="ทม.หนองปลิง">ทม.หนองปลิง</option>
+                <option value="ทต.นครชุม">ทต.นครชุม</option>
+                <option value="อบต.อ่างทอง">อบต.อ่างทอง</option>
+            </select>
+            <select id="sosUrgency" class="w-full p-2.5 border rounded-xl text-xs bg-white text-red-600 font-bold">
+                <option value="🔴 วิกฤตด่วน (ติดค้าง/ต้องการเรือ)">🔴 วิกฤตด่วน (ติดค้าง/ต้องการเรือ)</option>
+                <option value="🟡 ต้องการเสบียง/อาหาร">🟡 ต้องการเสบียง/อาหาร</option>
+            </select>
+            <textarea id="sosDetail" placeholder="จุดสังเกต / รายละเอียดเพิ่มเติม" rows="2" class="w-full p-2.5 border rounded-xl text-xs"></textarea>
+            <button onclick="submitSOS()" class="w-full bg-red-600 text-white font-bold py-3 rounded-xl text-xs shadow-lg">ส่งสัญญาณขอความช่วยเหลือ</button>
+        </div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwPhBjt3xMAo_kdEuzXYYKfZjlQBxmJeo1HrOViqyAGV9b39oYbekfpc3ew0bl5Q-k35w/exec";
+
+        function openSosModal() { document.getElementById('sosModal').style.display = 'flex'; }
+        function closeSosModal() { document.getElementById('sosModal').style.display = 'none'; }
+
+        function submitSOS() {
+            const data = {
+                action: "addSOS",
+                name: document.getElementById('sosName').value,
+                phone: document.getElementById('sosPhone').value,
+                subDistrict: document.getElementById('sosSubDistrict').value,
+                urgency: document.getElementById('sosUrgency').value,
+                detail: document.getElementById('sosDetail').value
+            };
+            if(!data.name || !data.phone) { alert('กรุณากรอกชื่อและเบอร์โทร'); return; }
+            fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(data) })
+            .then(res => res.json()).then(response => {
+                alert('ส่งข้อมูล SOS ไปยังระบบเรียบร้อย!');
+                closeSosModal();
+            }).catch(err => alert('เกิดข้อผิดพลาด กรุณาลองใหม่'));
+        }
+
+        function submitReport() {
+            const data = {
+                action: "addReport",
+                title: document.getElementById('reportTitle').value,
+                subDistrict: document.getElementById('reportSubDistrict').value,
+                detail: document.getElementById('reportDetail').value,
+                severity: "warning",
+                source: document.getElementById('reportSource').value
+            };
+            if(!data.title) { alert('กรุณากรอกหัวข้อ'); return; }
+            fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(data) })
+            .then(res => res.json()).then(response => {
+                alert('เพิ่มรายงานสถานการณ์สำเร็จ!');
+                location.reload();
+            });
+        }
+    </script>
+</body>
+</html>
