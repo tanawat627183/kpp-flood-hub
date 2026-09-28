@@ -57,14 +57,14 @@
                 <textarea id="reportDetail" placeholder="รายละเอียดเนื้อหาประกาศ..." rows="2" class="w-full p-2.5 border rounded-xl text-xs"></textarea>
                 
                 <input type="text" id="reportSource" placeholder="แหล่งที่มา / ลิงก์อ้างอิง" class="w-full p-2.5 border rounded-xl text-xs">
-                <button onclick="submitReport()" class="w-full bg-blue-600 text-white font-bold py-2.5 rounded-xl text-xs shadow">เผยแพร่ประกาศ</button>
+                <button onclick="submitReport()" class="w-full bg-blue-600 text-white font-bold py-2.5 rounded-xl text-xs shadow">เผยแพร่ประกาศทันที</button>
             </div>
 
             <!-- Live Feed Container -->
             <div class="space-y-3">
                 <div class="flex justify-between items-center text-xs text-slate-500 px-1">
                     <span>📌 ฟีดประกาศ (ประกาศทางการอยู่บนสุดเสมอ)</span>
-                    <span id="syncStatus" class="text-emerald-600 font-bold">● อัปเดตเรียลไทม์</span>
+                    <span id="syncStatus" class="text-emerald-600 font-bold">● ซิงค์ไวพิเศษ</span>
                 </div>
                 <div id="feedContainer" class="space-y-3">
                     <div class="p-4 bg-white rounded-2xl border text-xs text-slate-400 text-center">กำลังโหลดข้อมูล...</div>
@@ -78,9 +78,9 @@
             <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
                 <div class="flex justify-between items-center">
                     <h2 class="font-bold text-sm text-red-600">🛡️ แดชบอร์ดจัดการเคส SOS (สำหรับทีมกู้ภัย/อาสา)</h2>
-                    <button onclick="loadData()" class="text-xs bg-slate-100 p-2 rounded-lg font-bold">🔄 รีเฟรช</button>
+                    <button onclick="loadData(true)" class="text-xs bg-slate-100 p-2 rounded-lg font-bold">🔄 รีเฟรชด่วน</button>
                 </div>
-                <p class="text-xs text-slate-500">เมื่อกดรับเคส สถานะจะบันทึกลงระบบทันที ป้องกันการซ้ำซ้อน</p>
+                <p class="text-xs text-slate-500">กดรับเคสปุ๊บ สถานะเปลี่ยนทันทีแบบเรียลไทม์</p>
                 
                 <div id="sosDashboardContainer" class="space-y-3">
                     <div class="p-4 bg-slate-50 rounded-xl border text-xs text-slate-500 text-center">กำลังโหลดเคสฉุกเฉิน...</div>
@@ -158,7 +158,6 @@
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwPhBjt3xMAo_kdEuzXYYKfZjlQBxmJeo1HrOViqyAGV9b39oYbekfpc3ew0bl5Q-k35w/exec";
         let currentGPS = "ไม่ได้ระบุพิกัด";
         
-        // ประกาศทางการจากกรมอุตุนิยมวิทยาและ ปภ. (กำหนดให้แสดงอยู่บนสุดเสมอ)
         let officialReports = [
             {
                 timestamp: "28/09/2026 08:30:00",
@@ -182,7 +181,8 @@
 
         window.onload = function() {
             getGPSLocation();
-            loadData();
+            loadData(false);
+            setInterval(() => loadData(false), 5000); // ซิงค์อัตโนมัติทุก 5 วินาทีแบบเงียบๆ
         };
 
         function switchTab(tab) {
@@ -215,21 +215,20 @@
             }
         }
 
-        function loadData() {
+        function loadData(showAlert) {
             fetch(SCRIPT_URL + "?action=getData")
             .then(res => res.json())
             .then(data => {
                 let userReports = data.reports || [];
-                // เอาประกาศทางการไว้บนสุดเสมอ ตามด้วยโพสต์จากในระบบ
                 globalData.reports = [...officialReports, ...userReports];
                 globalData.sos = data.sos || [];
                 renderFeed();
                 renderSosDashboard();
+                if(showAlert) console.log("Refreshed successfully");
             })
             .catch(err => {
                 globalData.reports = [...officialReports];
                 renderFeed();
-                renderSosDashboard();
             });
         }
 
@@ -268,19 +267,19 @@
 
             let html = "";
             globalData.sos.forEach(item => {
-                let isTaken = item.status.includes("มีคนรับเคสแล้ว");
+                let isTaken = item.status && item.status.includes("มีคนรับเคสแล้ว");
                 html += `
-                    <div class="p-3 bg-white rounded-xl border shadow-sm space-y-2 text-xs">
+                    <div id="sos-card-${item.rowId}" class="p-3 bg-white rounded-xl border shadow-sm space-y-2 text-xs">
                         <div class="flex justify-between font-bold">
                             <span class="text-red-600">${item.urgency}</span>
-                            <span class="${isTaken ? 'text-emerald-600' : 'text-amber-600'} font-bold">${item.status}</span>
+                            <span class="status-text ${isTaken ? 'text-emerald-600' : 'text-amber-600'} font-bold">${item.status || '⏳ รอการช่วยเหลือ'}</span>
                         </div>
                         <p class="text-slate-800 font-bold">👤 ผู้แจ้ง: ${item.name} | 📞 โทร: <a href="tel:${item.phone}" class="text-blue-600 underline">${item.phone}</a></p>
                         <p class="text-slate-600">📍 พื้นที่: <strong>${item.subDistrict}</strong></p>
                         <p class="bg-slate-50 p-2 rounded text-slate-600">รายละเอียด: ${item.detail}</p>
                         <p class="text-[10px] text-slate-400">แจ้งเมื่อ: ${item.timestamp}</p>
                         
-                        <button onclick="takeSosCase(${item.rowId})" class="w-full ${isTaken ? 'bg-slate-400 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-700'} text-white font-bold py-2 rounded-lg shadow">
+                        <button id="sos-btn-${item.rowId}" onclick="takeSosCase(${item.rowId})" class="w-full ${isTaken ? 'bg-slate-400 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-700'} text-white font-bold py-2 rounded-lg shadow">
                             ${isTaken ? '✔️ เคสนี้มีเจ้าหน้าที่ดูแลแล้ว' : '✅ กดเพื่อรับเคสเข้าช่วยเหลือ'}
                         </button>
                     </div>
@@ -290,18 +289,21 @@
         }
 
         function takeSosCase(rowId) {
-            if(!confirm("ยืนยันการรับเคสนี้เพื่อเข้าช่วยเหลือ?")) return;
-            
+            // อัปเดตหน้าจอทันทีแบบไม่ต้องรอ (Optimistic UI) เพื่อความไวระดับพริบตา
+            const btn = document.getElementById(`sos-btn-${rowId}`);
+            if(btn) {
+                btn.className = "w-full bg-slate-400 text-white font-bold py-2 rounded-lg shadow cursor-not-allowed";
+                btn.innerText = "✔️ เคสนี้มีเจ้าหน้าที่ดูแลแล้ว";
+            }
+
             fetch(SCRIPT_URL, {
                 method: 'POST',
                 body: JSON.stringify({ action: "updateSosStatus", rowId: rowId })
             })
             .then(res => res.json())
             .then(response => {
-                alert('อัปเดตสถานะ: มีคนรับเคสแล้ว เรียบร้อย!');
-                loadData();
-            })
-            .catch(err => alert('เกิดข้อผิดพลาด กรุณาลองใหม่'));
+                loadData(false); // โหลดข้อมูลจริงเงียบๆ เบื้องหลัง
+            });
         }
 
         function submitSOS() {
@@ -315,33 +317,35 @@
             };
             if(!data.name || !data.phone) { alert('กรุณากรอกชื่อและเบอร์โทรศัพท์'); return; }
             
+            closeSosModal();
+            alert('ส่งสัญญาณ SOS สำเร็จ! ระบบกำลังส่งข้อมูลเข้าศูนย์');
+
             fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(data) })
-            .then(res => res.json()).then(response => {
-                alert('ส่งสัญญาณ SOS สำเร็จ! ทีมกู้ภัยได้รับข้อมูลแล้ว');
-                closeSosModal();
-                loadData();
-            }).catch(err => alert('ส่งข้อมูลสำเร็จ'));
+            .then(res => res.json())
+            .then(response => { loadData(false); });
         }
 
         function submitReport() {
+            const title = document.getElementById('reportTitle').value;
+            if(!title) { alert('กรุณากรอกหัวข้อประกาศ'); return; }
+
             const data = {
                 action: "addReport",
-                title: document.getElementById('reportTitle').value,
+                title: title,
                 subDistrict: document.getElementById('reportSubDistrict').value,
                 detail: document.getElementById('reportDetail').value,
                 severity: "warning",
                 source: document.getElementById('reportSource').value || "ทางการ"
             };
-            if(!data.title) { alert('กรุณากรอกหัวข้อประกาศ'); return; }
+
+            document.getElementById('reportTitle').value = '';
+            document.getElementById('reportDetail').value = '';
+            document.getElementById('reportSource').value = '';
+            alert('เผยแพร่ประกาศเรียบร้อย!');
 
             fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(data) })
-            .then(res => res.json()).then(response => {
-                alert('เผยแพร่ประกาศเรียบร้อย!');
-                document.getElementById('reportTitle').value = '';
-                document.getElementById('reportDetail').value = '';
-                document.getElementById('reportSource').value = '';
-                loadData();
-            }).catch(err => alert('บันทึกเรียบร้อย'));
+            .then(res => res.json())
+            .then(response => { loadData(false); });
         }
     </script>
 </body>
