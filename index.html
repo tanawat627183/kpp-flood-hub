@@ -27,15 +27,15 @@
             
             <!-- Giant Prominent Round SOS Button -->
             <div class="flex flex-col items-center justify-center my-4">
-                <button onclick="openSosModal()" class="w-40 h-40 bg-gradient-to-tr from-red-600 via-rose-600 to-red-700 hover:scale-105 active:scale-95 text-white font-black rounded-full shadow-2xl flex flex-col items-center justify-center text-center p-3 animate-pulse border-4 border-white transition-transform">
-                    <span class="text-4xl">🚨</span>
-                    <span class="text-base font-extrabold mt-1 tracking-wider">กด SOS</span>
-                    <span class="text-[11px] opacity-95">ขอความช่วยเหลือด่วน</span>
+                <button onclick="openSosModal()" class="w-44 h-44 bg-gradient-to-tr from-red-600 via-rose-600 to-red-700 hover:scale-105 active:scale-95 text-white font-black rounded-full shadow-2xl flex flex-col items-center justify-center text-center p-3 animate-pulse border-4 border-white transition-transform">
+                    <span class="text-5xl">🚨</span>
+                    <span class="text-lg font-extrabold mt-1 tracking-wider">กด SOS</span>
+                    <span class="text-xs opacity-95">ขอความช่วยเหลือด่วน</span>
                 </button>
                 <span class="text-xs text-red-600 font-bold mt-2 animate-bounce">⚠️ กดปุ่มนี้เมื่อเกิดเหตุฉุกเฉินเท่านั้น</span>
             </div>
 
-            <!-- Add Report Form (สำหรับเจ้าหน้าที่/อาสาสมัครรายงานข่าวจากทุกแหล่ง) -->
+            <!-- Add Report Form -->
             <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
                 <h2 class="font-bold text-xs text-blue-600">➕ เพิ่มข่าวสาร / ประกาศสถานการณ์</h2>
                 <input type="text" id="reportTitle" placeholder="หัวข้อประกาศ (เช่น ประกาศเตือนภัยจาก ปภ.)" class="w-full p-2.5 border rounded-xl text-xs">
@@ -60,32 +60,30 @@
                 <button onclick="submitReport()" class="w-full bg-blue-600 text-white font-bold py-2.5 rounded-xl text-xs shadow">เผยแพร่ประกาศ</button>
             </div>
 
-            <!-- Live Feed Container (ย้อนหลัง 7 วัน + ใหม่สุดอยู่บนสุด พร้อมป้ายอัปเดตล่าสุด) -->
+            <!-- Live Feed Container -->
             <div class="space-y-3">
                 <div class="flex justify-between items-center text-xs text-slate-500 px-1">
                     <span>📌 ฟีดประกาศและสถานการณ์ (เรียลไทม์)</span>
-                    <span id="syncStatus" class="text-emerald-600 font-bold">● พร้อมใช้งาน</span>
+                    <span id="syncStatus" class="text-emerald-600 font-bold">● ซิงค์ข้อมูลแล้ว</span>
                 </div>
                 <div id="feedContainer" class="space-y-3">
-                    <div class="p-4 bg-white rounded-2xl border text-xs text-slate-400 text-center">
-                        กำลังดึงข้อมูลประกาศจากระบบ... (หากไม่มีข้อมูลแสดงว่ายังไม่มีการโพสต์)
-                    </div>
+                    <div class="p-4 bg-white rounded-2xl border text-xs text-slate-400 text-center">กำลังโหลดข้อมูล...</div>
                 </div>
             </div>
 
         </div>
 
-        <!-- TAB 2: Emergency Response Dashboard (แดชบอร์ดเคส SOS จริง) -->
+        <!-- TAB 2: Emergency Response Dashboard -->
         <div id="viewDash" class="space-y-4 hidden">
             <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
                 <div class="flex justify-between items-center">
                     <h2 class="font-bold text-sm text-red-600">🛡️ แดชบอร์ดจัดการเคส SOS (สำหรับทีมกู้ภัย/อาสา)</h2>
-                    <button onclick="loadSosDashboard()" class="text-xs bg-slate-100 p-2 rounded-lg font-bold">🔄 รีเฟรช</button>
+                    <button onclick="loadData()" class="text-xs bg-slate-100 p-2 rounded-lg font-bold">🔄 รีเฟรช</button>
                 </div>
-                <p class="text-xs text-slate-500">เมื่อกดรับเคส สถานะจะเปลี่ยนเป็น "มีคนรับเคสแล้ว" ทันที เพื่อป้องกันการซ้ำซ้อน</p>
+                <p class="text-xs text-slate-500">เมื่อกดรับเคส สถานะจะบันทึกลง Google Sheets ทันที ป้องกันการซ้ำซ้อน</p>
                 
                 <div id="sosDashboardContainer" class="space-y-3">
-                    <div class="p-4 bg-slate-50 rounded-xl border text-xs text-slate-500 text-center">ไม่มีเคสแจ้งขอความช่วยเหลือในขณะนี้</div>
+                    <div class="p-4 bg-slate-50 rounded-xl border text-xs text-slate-500 text-center">กำลังโหลดเคสฉุกเฉิน...</div>
                 </div>
             </div>
         </div>
@@ -159,11 +157,12 @@
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwPhBjt3xMAo_kdEuzXYYKfZjlQBxmJeo1HrOViqyAGV9b39oYbekfpc3ew0bl5Q-k35w/exec";
         let currentGPS = "ไม่ได้ระบุพิกัด";
+        let globalData = { reports: [], sos: [] };
 
         window.onload = function() {
             getGPSLocation();
-            loadFeedData();
-            setInterval(autoRefreshData, 10000); // รีเฟรชอัตโนมัติทุก 10 วินาที
+            loadData();
+            setInterval(loadData, 10000); // ซิงค์ข้อมูลอัตโนมัติทุก 10 วินาที
         };
 
         function switchTab(tab) {
@@ -177,7 +176,7 @@
                 document.getElementById('viewDash').style.display = 'block';
                 document.getElementById('tabDashBtn').className = "py-2.5 rounded-xl bg-white text-red-600 shadow-sm transition-all";
                 document.getElementById('tabFeedBtn').className = "py-2.5 rounded-xl text-slate-600 transition-all";
-                loadSosDashboard();
+                renderSosDashboard();
             }
         }
 
@@ -196,6 +195,92 @@
             }
         }
 
+        function loadData() {
+            fetch(SCRIPT_URL + "?action=getData")
+            .then(res => res.json())
+            .then(data => {
+                globalData = data;
+                renderFeed();
+                renderSosDashboard();
+            })
+            .catch(err => console.log("Error loading data:", err));
+        }
+
+        function renderFeed() {
+            const container = document.getElementById('feedContainer');
+            if (!globalData.reports || globalData.reports.length === 0) {
+                container.innerHTML = `<div class="p-4 bg-white rounded-2xl border text-xs text-slate-400 text-center">ยังไม่มีประกาศสถานการณ์ในระบบ</div>`;
+                return;
+            }
+
+            let html = "";
+            globalData.reports.forEach((item, index) => {
+                let badgeClass = index === 0 ? "bg-red-100 text-red-700 border-red-200 animate-pulse" : "bg-blue-100 text-blue-800";
+                let badgeText = index === 0 ? "🔥 ใหม่ล่าสุด" : "📌 ประกาศ";
+                
+                html += `
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-2">
+                        <div class="flex justify-between items-start">
+                            <span class="${badgeClass} text-xs font-extrabold px-2.5 py-1 rounded-lg border">${badgeText}</span>
+                            <span class="text-[11px] text-slate-400">อัปเดตเมื่อ: ${item.timestamp}</span>
+                        </div>
+                        <h3 class="font-bold text-base text-slate-900">[${item.subDistrict}] ${item.title}</h3>
+                        <p class="text-sm text-slate-600">${item.detail}</p>
+                        <div class="text-xs bg-slate-50 p-2.5 rounded-xl border flex justify-between items-center">
+                            <span>🔍 <strong>แหล่งที่มา:</strong> ${item.source}</span>
+                            ${item.source.startsWith('http') ? `<a href="${item.source}" target="_blank" class="text-blue-600 underline font-bold">ดูลิงก์ต้นทาง</a>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function renderSosDashboard() {
+            const container = document.getElementById('sosDashboardContainer');
+            if (!globalData.sos || globalData.sos.length === 0) {
+                container.innerHTML = `<div class="p-4 bg-slate-50 rounded-xl border text-xs text-slate-500 text-center">ไม่มีเคสแจ้งขอความช่วยเหลือในขณะนี้</div>`;
+                return;
+            }
+
+            let html = "";
+            globalData.sos.forEach(item => {
+                let isTaken = item.status.includes("มีคนรับเคสแล้ว");
+                html += `
+                    <div class="p-3 bg-white rounded-xl border shadow-sm space-y-2 text-xs">
+                        <div class="flex justify-between font-bold">
+                            <span class="text-red-600">${item.urgency}</span>
+                            <span class="${isTaken ? 'text-emerald-600' : 'text-amber-600'} font-bold">${item.status}</span>
+                        </div>
+                        <p class="text-slate-800 font-bold">👤 ผู้แจ้ง: ${item.name} | 📞 โทร: <a href="tel:${item.phone}" class="text-blue-600 underline">${item.phone}</a></p>
+                        <p class="text-slate-600">📍 พื้นที่: <strong>${item.subDistrict}</strong></p>
+                        <p class="bg-slate-50 p-2 rounded text-slate-600">รายละเอียด: ${item.detail}</p>
+                        <p class="text-[10px] text-slate-400">แจ้งเมื่อ: ${item.timestamp}</p>
+                        
+                        <button onclick="takeSosCase(${item.rowId})" class="w-full ${isTaken ? 'bg-slate-400 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-700'} text-white font-bold py-2 rounded-lg shadow">
+                            ${isTaken ? '✔️ เคสนี้มีเจ้าหน้าที่ดูแลแล้ว' : '✅ กดเพื่อรับเคสเข้าช่วยเหลือ'}
+                        </button>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function takeSosCase(rowId) {
+            if(!confirm("ยืนยันการรับเคสนี้เพื่อเข้าช่วยเหลือ?")) return;
+            
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: "updateSosStatus", rowId: rowId })
+            })
+            .then(res => res.json())
+            .then(response => {
+                alert('อัปเดตสถานะ: มีคนรับเคสแล้ว เรียบร้อย!');
+                loadData(); // โหลดข้อมูลใหม่ทันที
+            })
+            .catch(err => alert('เกิดข้อผิดพลาด กรุณาลองใหม่'));
+        }
+
         function submitSOS() {
             const data = {
                 action: "addSOS",
@@ -211,7 +296,7 @@
             .then(res => res.json()).then(response => {
                 alert('ส่งสัญญาณ SOS สำเร็จ! ทีมกู้ภัยได้รับข้อมูลแล้ว');
                 closeSosModal();
-                loadSosDashboard();
+                loadData();
             }).catch(err => alert('ส่งข้อมูลสำเร็จ'));
         }
 
@@ -229,31 +314,11 @@
             fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(data) })
             .then(res => res.json()).then(response => {
                 alert('เผยแพร่ประกาศเรียบร้อย!');
-                location.reload();
+                document.getElementById('reportTitle').value = '';
+                document.getElementById('reportDetail').value = '';
+                document.getElementById('reportSource').value = '';
+                loadData();
             }).catch(err => alert('บันทึกเรียบร้อย'));
-        }
-
-        function loadFeedData() {
-            // ดึงข้อมูลฟีดประกาศ (กรองย้อนหลัง 7 วัน + ใหม่สุดอยู่บนสุด)
-            // ระบบจะดึงผ่าน Google Apps Script doGet
-        }
-
-        function loadSosDashboard() {
-            // โหลดรายการเคส SOS จริงจากชีต SOS
-            document.getElementById('sosDashboardContainer').innerHTML = `
-                <div class="p-3 bg-white rounded-xl border shadow-sm space-y-2 text-xs">
-                    <div class="flex justify-between font-bold text-red-600">
-                        <span>🔴 [วิกฤต] รอการช่วยเหลือ</span>
-                        <span class="text-amber-600 font-bold" id="status-1">⏳ รอเคส</span>
-                    </div>
-                    <p class="text-slate-700 font-bold">พื้นที่: ต.นครชุม (กำลังเชื่อมต่อข้อมูลจริงจากชีต SOS)</p>
-                    <button onclick="document.getElementById('status-1').innerText='✅ มีคนรับเคสแล้ว'; document.getElementById('status-1').className='text-emerald-600 font-bold';" class="w-full bg-emerald-600 text-white font-bold py-2 rounded-lg">✅ กดเพื่อรับเคสเข้าช่วยเหลือ</button>
-                </div>
-            `;
-        }
-
-        function autoRefreshData() {
-            // ทำการดึงข้อมูลอัปเดตแบบเรียลไทม์เบื้องหลัง
         }
     </script>
 </body>
