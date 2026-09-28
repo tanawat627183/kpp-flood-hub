@@ -10,13 +10,13 @@
 
     <!-- Header -->
     <header class="bg-gradient-to-r from-red-700 to-rose-800 text-white p-4 sm:p-5 rounded-b-3xl shadow-lg text-center">
-        <h1 class="text-base sm:text-lg font-black tracking-wide">🚨 ระบบตอบโต้ จ.กำแพงเพชร</h1>
+        <h1 class="text-base sm:text-lg font-black tracking-wide">🚨 ระบบปฏิบัติการฉุกเฉิน จ.กำแพงเพชร</h1>
         <p class="text-xs opacity-90 mt-1">ระบบช่วยเหลือผู้ประสบภัย & ติดตามสถานการณ์เรียลไทม์</p>
     </header>
 
     <main class="w-full max-w-md mx-auto p-3 sm:p-4 space-y-4">
         
-        <!-- Weather Widget (Fixed & Stable) -->
+        <!-- Weather Widget -->
         <div class="bg-gradient-to-br from-blue-600 to-cyan-700 text-white p-4 rounded-2xl shadow-md flex justify-between items-center">
             <div>
                 <span class="text-[11px] bg-white/20 px-2 py-0.5 rounded-full font-medium">🌦️ สภาพอากาศ จ.กำแพงเพชร</span>
@@ -77,7 +77,7 @@
             <div class="space-y-3">
                 <div class="flex justify-between items-center text-xs text-slate-500 px-1">
                     <span>📌 ฟีดประกาศ (ประกาศทางการอยู่บนสุดเสมอ)</span>
-                    <span class="text-emerald-600 font-bold">● โหลดไวเสถียร 100%</span>
+                    <span class="text-emerald-600 font-bold">● อัปเดตสมบูรณ์</span>
                 </div>
                 <div id="feedContainer" class="space-y-3">
                     <div class="p-4 bg-white rounded-2xl border text-xs text-slate-400 text-center">กำลังโหลดข้อมูล...</div>
@@ -171,21 +171,13 @@
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwPhBjt3xMAo_kdEuzXYYKfZjlQBxmJeo1HrOViqyAGV9b39oYbekfpc3ew0bl5Q-k35w/exec";
         let currentGPS = "ไม่ได้ระบุพิกัด";
         
-        // ประกาศทางการจากกรมอุตุนิยมวิทยาและ ปภ. (เสถียร 100% แสดงผลทันทีไม่ต้องรอเน็ต)
+        // ประกาศทางการตรึงถาวร (ขึ้นโชว์บนสุดเสมอ ป้องกันการหาย)
         let officialReports = [
             {
                 timestamp: "28/09/2026 08:30:00",
-                subDistrict: "ทุกพื้นที่ / ภาพรวมจังหวัดกำแพงเพชร",
-                title: "ประกาศเตือนภัย: ภาคเหนือและกลางเฝ้าระวังฝนตกหนัก น้ำป่าไหลหลาก",
-                detail: "กรมอุตุนิยมวิทยาออกประกาศเตือนพื้นที่เสี่ยงภัย ขอให้ประชาชนในเขต จ.กำแพงเพชร ระมัดระวังมวลน้ำหลากและติดตามข่าวสารทางการอย่างใกล้ชิด",
-                source: "https://www.tmd.go.th",
-                isOfficial: true
-            },
-            {
-                timestamp: "27/09/2026 12:00:00",
-                subDistrict: "ทม.กำแพงเพชร (ต.ในเมือง)",
-                title: "กองอำนวยการป้องกันและบรรเทาสาธารณภัย สั่งเฝ้าระวังระดับน้ำแม่น้ำปิง",
-                detail: "ติดตามสถานการณ์มวลน้ำเหนือและแจ้งเตือนประชาชนริมแม่น้ำปิงเตรียมพร้อมรับมือระดับน้ำที่อาจเพิ่มสูงขึ้น",
+                subDistrict: "ทุกพื้นที่ / จ.กำแพงเพชร",
+                title: "ประกาศเตือนภัย: กรมอุตุฯ แจ้งเฝ้าระวังฝนตกหนักและน้ำป่าไหลหลาก",
+                detail: "ขอให้ประชาชนในพื้นที่เสี่ยงภัย จ.กำแพงเพชร ระมัดระวังมวลน้ำหลากและติดตามประกาศจากทางราชการอย่างใกล้ชิด",
                 source: "https://www.tmd.go.th",
                 isOfficial: true
             }
@@ -196,7 +188,7 @@
         window.onload = function() {
             getGPSLocation();
             
-            // โหลดข้อมูลความจำเครื่องขึ้นมาโชว์ทันทีเพื่อความเร็วแสง
+            // โหลดข้อมูลความจำเครื่องทันที
             let cachedData = localStorage.getItem('kpp_flood_cache');
             if (cachedData) {
                 try {
@@ -205,7 +197,6 @@
                     renderSosDashboard();
                 } catch(e) {}
             } else {
-                globalData.reports = [...officialReports];
                 renderFeed();
             }
 
@@ -247,8 +238,7 @@
             fetch(SCRIPT_URL + "?action=getData")
             .then(res => res.json())
             .then(data => {
-                let userReports = data.reports || [];
-                globalData.reports = [...officialReports, ...userReports];
+                globalData.reports = data.reports || [];
                 globalData.sos = data.sos || [];
                 
                 localStorage.setItem('kpp_flood_cache', JSON.stringify(globalData));
@@ -256,36 +246,52 @@
                 renderSosDashboard();
             })
             .catch(err => {
-                if(!globalData.reports.length) {
-                    globalData.reports = [...officialReports];
-                    renderFeed();
-                }
+                renderFeed();
             });
         }
 
         function renderFeed() {
             const container = document.getElementById('feedContainer');
             let html = "";
-            globalData.reports.forEach((item) => {
-                let isOfficial = item.isOfficial;
-                let badgeClass = isOfficial ? "bg-red-100 text-red-700 border-red-300 animate-pulse" : "bg-blue-100 text-blue-800";
-                let badgeText = isOfficial ? "🔥 ประกาศทางการ (ด่วน)" : "📌 ข่าวสารในระบบ";
-                
+            
+            // นำประกาศทางการขึ้นแสดงก่อนเสมอ
+            officialReports.forEach((item) => {
                 html += `
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border ${isOfficial ? 'border-red-300 ring-2 ring-red-100' : 'border-slate-200'} space-y-2">
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-red-300 ring-2 ring-red-100 space-y-2">
                         <div class="flex justify-between items-start">
-                            <span class="${badgeClass} text-xs font-extrabold px-2.5 py-1 rounded-lg border">${badgeText}</span>
+                            <span class="bg-red-100 text-red-700 text-xs font-extrabold px-2.5 py-1 rounded-lg border border-red-300 animate-pulse">🔥 ประกาศกรมอุตุฯ (ด่วน)</span>
                             <span class="text-[11px] text-slate-400 font-medium">${item.timestamp}</span>
                         </div>
                         <h3 class="font-bold text-base text-slate-900">[${item.subDistrict}] ${item.title}</h3>
                         <p class="text-sm text-slate-600 leading-relaxed">${item.detail}</p>
                         <div class="text-xs bg-slate-50 p-2.5 rounded-xl border flex justify-between items-center">
                             <span>🔍 <strong>แหล่งที่มา:</strong> ${item.source}</span>
-                            ${item.source.startsWith('http') ? `<a href="${item.source}" target="_blank" class="text-blue-600 underline font-bold">ดูต้นทาง</a>` : ''}
+                            <a href="${item.source}" target="_blank" class="text-blue-600 underline font-bold">ดูต้นทาง</a>
                         </div>
                     </div>
                 `;
             });
+
+            // ตามด้วยข่าวสารทั่วไปจากในระบบ
+            if (globalData.reports && globalData.reports.length > 0) {
+                globalData.reports.forEach((item) => {
+                    html += `
+                        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-2">
+                            <div class="flex justify-between items-start">
+                                <span class="bg-blue-100 text-blue-800 text-xs font-extrabold px-2.5 py-1 rounded-lg border">📌 ข่าวสารในระบบ</span>
+                                <span class="text-[11px] text-slate-400 font-medium">${item.timestamp}</span>
+                            </div>
+                            <h3 class="font-bold text-base text-slate-900">[${item.subDistrict}] ${item.title}</h3>
+                            <p class="text-sm text-slate-600 leading-relaxed">${item.detail}</p>
+                            <div class="text-xs bg-slate-50 p-2.5 rounded-xl border flex justify-between items-center">
+                                <span>🔍 <strong>แหล่งที่มา:</strong> ${item.source}</span>
+                                ${item.source.startsWith('http') ? `<a href="${item.source}" target="_blank" class="text-blue-600 underline font-bold">ดูต้นทาง</a>` : ''}
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
             container.innerHTML = html;
         }
 
