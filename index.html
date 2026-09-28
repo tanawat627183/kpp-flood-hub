@@ -64,10 +64,10 @@
             <div class="space-y-3">
                 <div class="flex justify-between items-center text-xs text-slate-500 px-1">
                     <span>📌 ฟีดประกาศ (ประกาศทางการอยู่บนสุดเสมอ)</span>
-                    <span id="syncStatus" class="text-emerald-600 font-bold">● ซิงค์ไวพิเศษ</span>
+                    <span id="syncStatus" class="text-emerald-600 font-bold">● โหลดไวพิเศษ</span>
                 </div>
                 <div id="feedContainer" class="space-y-3">
-                    <div class="p-4 bg-white rounded-2xl border text-xs text-slate-400 text-center">กำลังโหลดข้อมูล...</div>
+                    <div class="p-4 bg-white rounded-2xl border text-xs text-slate-400 text-center">กำลังโหลดข้อมูลทันที...</div>
                 </div>
             </div>
 
@@ -181,6 +181,18 @@
 
         window.onload = function() {
             getGPSLocation();
+            
+            // โหลดข้อมูลจากความจำเครื่อง (LocalStorage) มาแสดงผลทันทีแบบไม่ต้องรอเน็ต!
+            let cachedData = localStorage.getItem('kpp_flood_cache');
+            if (cachedData) {
+                try {
+                    globalData = JSON.parse(cachedData);
+                    renderFeed();
+                    renderSosDashboard();
+                } catch(e) {}
+            }
+
+            // ดึงข้อมูลใหม่จาก Google Sheets แบบเบื้องหลังเงียบๆ
             loadData(false);
             setInterval(() => loadData(false), 5000);
         };
@@ -222,12 +234,18 @@
                 let userReports = data.reports || [];
                 globalData.reports = [...officialReports, ...userReports];
                 globalData.sos = data.sos || [];
+                
+                // บันทึกเก็บไว้ในความจำเครื่อง (Cache)
+                localStorage.setItem('kpp_flood_cache', JSON.stringify(globalData));
+
                 renderFeed();
                 renderSosDashboard();
             })
             .catch(err => {
-                globalData.reports = [...officialReports];
-                renderFeed();
+                if(!globalData.reports.length) {
+                    globalData.reports = [...officialReports];
+                    renderFeed();
+                }
             });
         }
 
@@ -267,8 +285,6 @@
             let html = "";
             globalData.sos.forEach(item => {
                 let isTaken = item.status && item.status.includes("มีคนรับเคสแล้ว");
-                
-                // แยกพิกัด GPS ออกมาจากข้อความรายละเอียด (ถ้ามี)
                 let gpsMatch = item.detail.match(/GPS:\s*([0-9.-]+,\s*[0-9.-]+)/);
                 let gpsCoords = gpsMatch ? gpsMatch[1] : null;
                 let mapButtonHtml = gpsCoords ? `
@@ -311,9 +327,7 @@
                 body: JSON.stringify({ action: "updateSosStatus", rowId: rowId })
             })
             .then(res => res.json())
-            .then(response => {
-                loadData(false);
-            });
+            .then(response => { loadData(false); });
         }
 
         function submitSOS() {
