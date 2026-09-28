@@ -80,7 +80,7 @@
                     <h2 class="font-bold text-sm text-red-600">🛡️ แดชบอร์ดจัดการเคส SOS (สำหรับทีมกู้ภัย/อาสา)</h2>
                     <button onclick="loadData(true)" class="text-xs bg-slate-100 p-2 rounded-lg font-bold">🔄 รีเฟรชด่วน</button>
                 </div>
-                <p class="text-xs text-slate-500">กดรับเคสปุ๊บ สถานะเปลี่ยนทันทีแบบเรียลไทม์</p>
+                <p class="text-xs text-slate-500">กดรับเคสปุ๊บ สถานะเปลี่ยนทันที พร้อมปุ่มนำทางพิกัด GPS</p>
                 
                 <div id="sosDashboardContainer" class="space-y-3">
                     <div class="p-4 bg-slate-50 rounded-xl border text-xs text-slate-500 text-center">กำลังโหลดเคสฉุกเฉิน...</div>
@@ -182,7 +182,7 @@
         window.onload = function() {
             getGPSLocation();
             loadData(false);
-            setInterval(() => loadData(false), 5000); // ซิงค์อัตโนมัติทุก 5 วินาทีแบบเงียบๆ
+            setInterval(() => loadData(false), 5000);
         };
 
         function switchTab(tab) {
@@ -224,7 +224,6 @@
                 globalData.sos = data.sos || [];
                 renderFeed();
                 renderSosDashboard();
-                if(showAlert) console.log("Refreshed successfully");
             })
             .catch(err => {
                 globalData.reports = [...officialReports];
@@ -268,6 +267,16 @@
             let html = "";
             globalData.sos.forEach(item => {
                 let isTaken = item.status && item.status.includes("มีคนรับเคสแล้ว");
+                
+                // แยกพิกัด GPS ออกมาจากข้อความรายละเอียด (ถ้ามี)
+                let gpsMatch = item.detail.match(/GPS:\s*([0-9.-]+,\s*[0-9.-]+)/);
+                let gpsCoords = gpsMatch ? gpsMatch[1] : null;
+                let mapButtonHtml = gpsCoords ? `
+                    <a href="https://www.google.com/maps/search/?api=1&query=${gpsCoords}" target="_blank" class="block w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg text-center shadow">
+                        🗺️ เปิดแผนที่นำทางไปยังพิกัดนี้
+                    </a>
+                ` : '';
+
                 html += `
                     <div id="sos-card-${item.rowId}" class="p-3 bg-white rounded-xl border shadow-sm space-y-2 text-xs">
                         <div class="flex justify-between font-bold">
@@ -279,6 +288,8 @@
                         <p class="bg-slate-50 p-2 rounded text-slate-600">รายละเอียด: ${item.detail}</p>
                         <p class="text-[10px] text-slate-400">แจ้งเมื่อ: ${item.timestamp}</p>
                         
+                        ${mapButtonHtml}
+
                         <button id="sos-btn-${item.rowId}" onclick="takeSosCase(${item.rowId})" class="w-full ${isTaken ? 'bg-slate-400 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-700'} text-white font-bold py-2 rounded-lg shadow">
                             ${isTaken ? '✔️ เคสนี้มีเจ้าหน้าที่ดูแลแล้ว' : '✅ กดเพื่อรับเคสเข้าช่วยเหลือ'}
                         </button>
@@ -289,7 +300,6 @@
         }
 
         function takeSosCase(rowId) {
-            // อัปเดตหน้าจอทันทีแบบไม่ต้องรอ (Optimistic UI) เพื่อความไวระดับพริบตา
             const btn = document.getElementById(`sos-btn-${rowId}`);
             if(btn) {
                 btn.className = "w-full bg-slate-400 text-white font-bold py-2 rounded-lg shadow cursor-not-allowed";
@@ -302,7 +312,7 @@
             })
             .then(res => res.json())
             .then(response => {
-                loadData(false); // โหลดข้อมูลจริงเงียบๆ เบื้องหลัง
+                loadData(false);
             });
         }
 
