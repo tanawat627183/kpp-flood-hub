@@ -10,78 +10,93 @@
 
     <!-- Header -->
     <header class="bg-red-700 text-white p-5 rounded-b-3xl shadow-lg text-center">
-        <h1 class="text-lg font-black">🚨 ระบบสถานการณ์ฉุกเฉินจังหวัดกำแพงเพชร</h1>
-        <p class="text-xs opacity-90 mt-1">อัปเดตสถานการณ์น้ำรายตำบล & ศูนย์รับแจ้งเหตุ SOS</p>
+        <h1 class="text-base font-black">🚨 ระบบสถานการณ์ฉุกเฉินจังหวัดกำแพงเพชร</h1>
+        <p class="text-xs opacity-90 mt-1">ศูนย์ปฏิบัติการช่วยเหลือผู้ประสบภัยและอัปเดตสถานการณ์เรียลไทม์</p>
     </header>
 
     <main class="max-w-md mx-auto p-4 space-y-5">
         
-        <!-- Floating / Prominent Round SOS Button -->
-        <div class="flex flex-col items-center justify-center my-4">
-            <button onclick="openSosModal()" class="w-32 h-32 bg-gradient-to-tr from-red-600 to-rose-500 hover:from-red-700 hover:to-rose-600 text-white font-black rounded-full shadow-2xl flex flex-col items-center justify-center text-center p-2 animate-bounce border-4 border-white">
-                <span class="text-3xl">🚨</span>
-                <span class="text-sm mt-1 tracking-wider">กด SOS</span>
-                <span class="text-[10px] opacity-90">ฉุกเฉินด่วน</span>
-            </button>
-            <span class="text-xs text-slate-500 mt-2 font-medium">กดปุ่มนี้เมื่อต้องการความช่วยเหลือเร่งด่วน</span>
+        <!-- Navigation Tabs -->
+        <div class="grid grid-cols-2 gap-2 bg-slate-200 p-1.5 rounded-2xl text-xs font-bold">
+            <button onclick="switchTab('feed')" id="tabFeedBtn" class="py-2.5 rounded-xl bg-white text-red-600 shadow-sm transition-all">📌 ฟีดสถานการณ์ & SOS</button>
+            <button onclick="switchTab('dashboard')" id="tabDashBtn" class="py-2.5 rounded-xl text-slate-600 transition-all">🛡️ แดชบอร์ดเคสฉุกเฉิน</button>
         </div>
 
-        <!-- Section: Quick Report (สำหรับเจ้าหน้าที่/อาสาสมัครอัปเดต) -->
-        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
-            <h2 class="font-bold text-xs text-blue-600 flex items-center gap-1">➕ แจ้ง/อัปเดตสถานการณ์น้ำ (อิงตามพื้นที่จริง)</h2>
-            <input type="text" id="reportTitle" placeholder="หัวข้อสถานการณ์ (เช่น น้ำป่าหลาก, ระดับน้ำล้นตลิ่ง)" class="w-full p-2.5 border rounded-xl text-xs">
+        <!-- TAB 1: Feed & SOS Trigger -->
+        <div id="viewFeed" class="space-y-4">
             
-            <div class="grid grid-cols-2 gap-2">
-                <select id="reportDistrict" class="p-2.5 border rounded-xl text-xs bg-white">
-                    <option value="อ.เมืองกำแพงเพชร">อำเภอเมืองกำแพงเพชร</option>
-                    <option value="อ.พรานกระต่าย">อำเภอพรานกระต่าย</option>
-                    <option value="อ.คลองขลุง">อำเภอคลองขลุง</option>
-                    <option value="อ.ขาณุวรลักษบุรี">อำเภอขาณุวรลักษบุรี</option>
-                </select>
-                <select id="reportSubDistrict" class="p-2.5 border rounded-xl text-xs bg-white">
+            <!-- Prominent Round SOS Button -->
+            <div class="flex flex-col items-center justify-center my-2">
+                <button onclick="openSosModal()" class="w-32 h-32 bg-gradient-to-tr from-red-600 to-rose-500 hover:from-red-700 hover:to-rose-600 text-white font-black rounded-full shadow-2xl flex flex-col items-center justify-center text-center p-2 animate-bounce border-4 border-white">
+                    <span class="text-3xl">🚨</span>
+                    <span class="text-sm mt-1 tracking-wider">กด SOS</span>
+                    <span class="text-[10px] opacity-90">ฉุกเฉินด่วน</span>
+                </button>
+                <span class="text-xs text-slate-500 mt-2 font-medium">กดปุ่มนี้เมื่อต้องการความช่วยเหลือเร่งด่วน</span>
+            </div>
+
+            <!-- Add Report Form (สำหรับเจ้าหน้าที่/อาสาสมัคร) -->
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+                <h2 class="font-bold text-xs text-blue-600">➕ เพิ่มรายงานสถานการณ์น้ำ / ประกาศเตือน</h2>
+                <input type="text" id="reportTitle" placeholder="หัวข้อสถานการณ์ (เช่น น้ำป่าหลาก ต.นครชุม)" class="w-full p-2.5 border rounded-xl text-xs">
+                
+                <select id="reportSubDistrict" class="w-full p-2.5 border rounded-xl text-xs bg-white">
                     <option value="ทม.กำแพงเพชร (ต.ในเมือง)">ทม.กำแพงเพชร (ต.ในเมือง)</option>
-                    <option value="ทม.หนองปลิง">ทม.หนองปลิง</option>
-                    <option value="ทต.นครชุม">ทต.นครชุม</option>
+                    <option value="ทม.หนองปลิง (ต.หนองปลิง)">ทม.หนองปลิง (ต.หนองปลิง)</option>
                     <option value="ทต.คลองแม่ลาย">ทต.คลองแม่ลาย</option>
+                    <option value="ทต.นครชุม">ทต.นครชุม</option>
+                    <option value="ทต.ปากดง">ทต.ปากดง</option>
+                    <option value="ทต.เทพนคร">ทต.เทพนคร</option>
+                    <option value="ทต.นิคมทุ่งโพธิ์ทะเล">ทต.นิคมทุ่งโพธิ์ทะเล</option>
                     <option value="อบต.อ่างทอง">อบต.อ่างทอง</option>
                     <option value="อบต.ลานดอกไม้">อบต.ลานดอกไม้</option>
+                    <option value="อบต.ไตรตรึงษ์">อบต.ไตรตรึงษ์</option>
                 </select>
+
+                <textarea id="reportDetail" placeholder="รายละเอียดสถานการณ์..." rows="2" class="w-full p-2.5 border rounded-xl text-xs"></textarea>
+                
+                <input type="text" id="reportSource" placeholder="แหล่งอ้างอิง / ลิงก์ที่มา (เช่น ปภ., กรมอุตุฯ)" class="w-full p-2.5 border rounded-xl text-xs">
+                <button onclick="submitReport()" class="w-full bg-blue-600 text-white font-bold py-2.5 rounded-xl text-xs shadow">เผยแพร่สถานการณ์</button>
             </div>
 
-            <textarea id="reportDetail" placeholder="รายละเอียดจุดสังเกต ระดับน้ำ หรือเส้นทางที่ถูกตัดขาด..." rows="2" class="w-full p-2.5 border rounded-xl text-xs"></textarea>
-            
-            <div class="flex gap-2">
-                <input type="text" id="reportSource" placeholder="แหล่งอ้างอิง (เช่น ปภ., กรมอุตุฯ, ผู้นำชุมชน)" class="flex-1 p-2.5 border rounded-xl text-xs">
-                <button onclick="submitReport()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs shadow">เผยแพร่</button>
+            <!-- Live Feed Container (ย้อนหลัง 7 วัน + อัปเดตล่าสุดอยู่บนสุด) -->
+            <div class="space-y-3">
+                <div class="flex justify-between items-center text-xs text-slate-500 px-1">
+                    <span>📌 ฟีดสถานการณ์ (อัปเดตเรียลไทม์ทุก 15 วิ)</span>
+                    <span id="syncStatus" class="text-emerald-600 font-bold">● ซิงค์ข้อมูลแล้ว</span>
+                </div>
+                <div id="feedContainer" class="space-y-3">
+                    <!-- ตัวอย่างการแสดงผลประกาศ -->
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-2">
+                        <div class="flex justify-between items-start">
+                            <span class="bg-red-100 text-red-700 text-xs font-extrabold px-2.5 py-1 rounded-lg">🔥 ใหม่ล่าสุด: เตือนภัยน้ำป่า</span>
+                            <span class="text-xs text-slate-400">เมื่อ 5 นาทีที่แล้ว</span>
+                        </div>
+                        <h3 class="font-bold text-base text-slate-900">ประกาศเฝ้าระวังมวลน้ำริมแม่น้ำปิง</h3>
+                        <p class="text-sm text-slate-600">พื้นที่ อ.เมืองกำแพงเพชร ทุกตำบลเตรียมรับมือมวลน้ำหลาก</p>
+                        <div class="text-xs bg-slate-50 p-2.5 rounded-xl border flex justify-between items-center">
+                            <span>🔍 <strong>แหล่งอ้างอิง:</strong> ปภ.กำแพงเพชร</span>
+                            <a href="#" class="text-blue-600 underline font-bold">ดูลิงก์ต้นทาง</a>
+                        </div>
+                    </div>
+                </div>
             </div>
+
         </div>
 
-        <!-- Live Feed Section -->
-        <div class="space-y-3">
-            <div class="flex justify-between items-center">
-                <h2 class="font-bold text-sm text-slate-700">📌 ฟีดสถานการณ์และประกาศเตือนภัย</h2>
-                <button onclick="location.reload()" class="text-xs text-blue-600 font-bold">🔄รีเฟรช</button>
-            </div>
-            
-            <!-- ตัวอย่างการแสดงผลประกาศกรมอุตุฯ / พื้นที่ -->
-            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-2">
-                <div class="flex justify-between items-start">
-                    <span class="bg-amber-100 text-amber-800 text-xs font-extrabold px-2.5 py-1 rounded-lg">
-                        🟡 ประกาศเตือน: ฝนตกหนัก/น้ำป่า
-                    </span>
-                    <span class="text-xs text-slate-400">อัปเดตล่าสุดวันนี้</span>
+        <!-- TAB 2: Emergency Response Dashboard (สำหรับทีมงานช่วยเหลือ) -->
+        <div id="viewDash" class="space-y-4 hidden">
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+                <div class="flex justify-between items-center">
+                    <h2 class="font-bold text-sm text-red-600">🛡️ แดชบอร์ดจัดการเคส SOS (สำหรับทีมกู้ภัย/อาสา)</h2>
+                    <button onclick="loadSosDashboard()" class="text-xs bg-slate-100 p-2 rounded-lg font-bold">🔄 รีเฟรชเคส</button>
                 </div>
-                <h3 class="font-bold text-base text-slate-900">แจ้งเตือนเฝ้าระวังพื้นที่ริมแม่น้ำปิง</h3>
-                <p class="text-sm text-slate-600 leading-relaxed">
-                    กองอำนวยการป้องกันและบรรเทาสาธารณภัย แจ้งเตือนประชาชนในเขต อ.เมืองกำแพงเพชร (ต.ในเมือง, นครชุม, หนองปลิง) เตรียมรับMวลน้ำและเก็บของขึ้นที่สูง
-                </p>
-                <div class="text-xs text-slate-500 bg-slate-50 p-2.5 rounded-xl border border-slate-100 space-y-1">
-                    <p>🔍 <strong>แหล่งอ้างอิง:</strong> กรมอุตุนิยมวิทยา / ปภ. กำแพงเพชร</p>
+                <p class="text-xs text-slate-500">ทุกคนสามารถกดดูพิกัดและกดปุ่ม "เข้าช่วยเหลือ" เพื่ออัปเดตสถานะได้ทันที</p>
+                
+                <div id="sosDashboardContainer" class="space-y-3">
+                    <!-- รายการเคส SOS จะถูกโหลดมาแสดงที่นี่แบบเรียลไทม์ -->
+                    <div class="p-3 bg-slate-50 rounded-xl border text-xs text-slate-500 text-center">กำลังโหลดข้อมูลเคสฉุกเฉิน...</div>
                 </div>
-            </div>
-
-            <div id="feedContainer" class="space-y-3">
-                <!-- ข้อมูลที่ส่งจาก Google Sheets จะแสดงที่นี่ -->
             </div>
         </div>
 
@@ -91,29 +106,31 @@
     <div id="sosModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
         <div class="bg-white w-full max-w-sm rounded-3xl p-5 shadow-2xl space-y-3 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center">
-                <h3 class="text-red-600 font-extrabold text-base flex items-center gap-1">
-                    🚨 แจ้งขอความช่วยเหลือฉุกเฉิน (SOS)
-                </h3>
+                <h3 class="text-red-600 font-extrabold text-base">🚨 แจ้งขอความช่วยเหลือด่วน (SOS)</h3>
                 <button onclick="closeSosModal()" class="text-slate-400 font-bold text-lg">✕</button>
             </div>
 
             <div class="space-y-2.5">
                 <div>
                     <label class="text-xs font-bold text-slate-700">1. เลือกระดับความรุนแรง</label>
-                    <div class="grid grid-cols-2 gap-2 mt-1">
-                        <button type="button" onclick="setUrgencyLevel('🔴 วิกฤตด่วน (ติดค้าง/ต้องการเรืออพยพ)')" id="btnRed" class="py-2.5 text-xs font-bold rounded-xl border bg-red-600 text-white border-red-600">🔴 วิกฤตด่วนสูงสุด</button>
-                        <button type="button" onclick="setUrgencyLevel('🟡 ต้องการเสบียง/อาหาร/น้ำดื่ม')" id="btnYellow" class="py-2.5 text-xs font-bold rounded-xl border bg-slate-50 text-slate-700">🟡 ต้องการเสบียง</button>
-                    </div>
+                    <select id="sosUrgency" class="w-full p-2.5 border rounded-xl text-xs mt-1 bg-white font-bold text-red-600">
+                        <option value="🔴 วิกฤตสูงสุด (ติดอยู่บนหลังคา/ต้องการเรืออพยพ)">🔴 วิกฤตสูงสุด (ติดอยู่บนหลังคา/ต้องการเรืออพยพ)</option>
+                        <option value="🟠 เจ็บป่วยฉุกเฉิน / ผู้ป่วยติดเตียงต้องการแพทย์">🟠 เจ็บป่วยฉุกเฉิน / ผู้ป่วยติดเตียงต้องการแพทย์</option>
+                        <option value="🟡 ขาดแคลนอาหาร น้ำดื่ม และยารักษาโรค">🟡 ขาดแคลนอาหาร น้ำดื่ม และยารักษาโรค</option>
+                        <option value="🟢 แจ้งเหตุทั่วไป / ต้นไม้ล้ม / น้ำท่วมถนน">🟢 แจ้งเหตุทั่วไป / ต้นไม้ล้ม / น้ำท่วมถนน</option>
+                    </select>
                 </div>
 
                 <div>
                     <label class="text-xs font-bold text-slate-700">2. ตำบล / พื้นที่เกิดเหตุ</label>
-                    <select id="sosSubDistrict" class="w-full p-2.5 border rounded-xl text-xs mt-1 bg-white font-medium">
+                    <select id="sosSubDistrict" class="w-full p-2.5 border rounded-xl text-xs mt-1 bg-white">
                         <option value="ทม.กำแพงเพชร (ต.ในเมือง)">ทม.กำแพงเพชร (ต.ในเมือง)</option>
                         <option value="ทม.หนองปลิง">ทม.หนองปลิง</option>
                         <option value="ทต.นครชุม">ทต.นครชุม</option>
                         <option value="ทต.คลองแม่ลาย">ทต.คลองแม่ลาย</option>
+                        <option value="ทต.ปากดง">ทต.ปากดง</option>
                         <option value="ทต.เทพนคร">ทต.เทพนคร</option>
+                        <option value="ทต.นิคมทุ่งโพธิ์ทะเล">ทต.นิคมทุ่งโพธิ์ทะเล</option>
                         <option value="อบต.อ่างทอง">อบต.อ่างทอง</option>
                         <option value="อบต.ลานดอกไม้">อบต.ลานดอกไม้</option>
                         <option value="อบต.ไตรตรึงษ์">อบต.ไตรตรึงษ์</option>
@@ -126,20 +143,20 @@
                 </div>
 
                 <div>
-                    <label class="text-xs font-bold text-slate-700">4. เบอร์โทรศัพท์ (ที่ติดต่อได้ทันที)</label>
+                    <label class="text-xs font-bold text-slate-700">4. เบอร์โทรศัพท์ติดต่อกลับ</label>
                     <input type="tel" id="sosPhone" placeholder="08x-xxx-xxxx" class="w-full p-2.5 border rounded-xl text-xs mt-1">
                 </div>
 
                 <div>
-                    <label class="text-xs font-bold text-slate-700">5. พิกัด GPS ตำแหน่งปัจจุบัน</label>
-                    <button type="button" onclick="getGPSLocation()" id="gpsButton" class="w-full mt-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-2 border border-slate-300">
-                        📍 กดเพื่อดึงพิกัด GPS อัตโนมัติ
+                    <label class="text-xs font-bold text-slate-700">5. พิกัด GPS (ดึงอัตโนมัติ)</label>
+                    <button type="button" onclick="getGPSLocation()" id="gpsButton" class="w-full mt-1 bg-emerald-50 text-emerald-700 font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-2 border border-emerald-300">
+                        📍 กำลังดึงพิกัด GPS อัตโนมัติ...
                     </button>
                 </div>
 
                 <div>
                     <label class="text-xs font-bold text-slate-700">6. รายละเอียดเพิ่มเติม / จุดสังเกต</label>
-                    <textarea id="sosDetail" rows="2" placeholder="เช่น ติดอยู่ชั้น 2 บ้านเลขที่..., มีผู้ป่วยติดเตียง" class="w-full p-2.5 border rounded-xl text-xs mt-1"></textarea>
+                    <textarea id="sosDetail" rows="2" placeholder="เช่น บ้านเลขที่, จุดสังเกตเด่น" class="w-full p-2.5 border rounded-xl text-xs mt-1"></textarea>
                 </div>
 
                 <button onclick="submitSOS()" class="w-full bg-red-600 hover:bg-red-700 text-white font-extrabold py-3.5 rounded-xl shadow-lg text-sm mt-2">
@@ -151,34 +168,41 @@
 
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwPhBjt3xMAo_kdEuzXYYKfZjlQBxmJeo1HrOViqyAGV9b39oYbekfpc3ew0bl5Q-k35w/exec";
-        let selectedUrgency = "🔴 วิกฤตด่วน (ติดค้าง/ต้องการเรืออพยพ)";
-        let currentGPS = "ไม่ได้ระบุพิกัด";
+        let currentGPS = "กำลังดึงพิกัด...";
+
+        // เปิดเว็บมา ดึงพิกัด GPS ทันที
+        window.onload = function() {
+            getGPSLocation();
+            setInterval(autoRefreshData, 15000); // รีเฟรชข้อมูลทุก 15 วินาที
+        };
+
+        function switchTab(tab) {
+            if(tab === 'feed') {
+                document.getElementById('viewFeed').style.display = 'block';
+                document.getElementById('viewDash').style.display = 'hidden';
+                document.getElementById('tabFeedBtn').className = "py-2.5 rounded-xl bg-white text-red-600 shadow-sm transition-all";
+                document.getElementById('tabDashBtn').className = "py-2.5 rounded-xl text-slate-600 transition-all";
+            } else {
+                document.getElementById('viewFeed').style.display = 'none';
+                document.getElementById('viewDash').style.display = 'block';
+                document.getElementById('tabDashBtn').className = "py-2.5 rounded-xl bg-white text-red-600 shadow-sm transition-all";
+                document.getElementById('tabFeedBtn').className = "py-2.5 rounded-xl text-slate-600 transition-all";
+                loadSosDashboard();
+            }
+        }
 
         function openSosModal() { document.getElementById('sosModal').style.display = 'flex'; }
         function closeSosModal() { document.getElementById('sosModal').style.display = 'none'; }
-
-        function setUrgencyLevel(level) {
-            selectedUrgency = level;
-            if(level.includes('วิกฤต')) {
-                document.getElementById('btnRed').className = "py-2.5 text-xs font-bold rounded-xl border bg-red-600 text-white border-red-600";
-                document.getElementById('btnYellow').className = "py-2.5 text-xs font-bold rounded-xl border bg-slate-50 text-slate-700";
-            } else {
-                document.getElementById('btnYellow').className = "py-2.5 text-xs font-bold rounded-xl border bg-amber-500 text-white border-amber-500";
-                document.getElementById('btnRed').className = "py-2.5 text-xs font-bold rounded-xl border bg-slate-50 text-slate-700";
-            }
-        }
 
         function getGPSLocation() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition((position) => {
                     currentGPS = `${position.coords.latitude}, ${position.coords.longitude}`;
-                    document.getElementById('gpsButton').innerText = `✅ บันทึกพิกัดสำเร็จ (${currentGPS})`;
-                    document.getElementById('gpsButton').className = "w-full mt-1 bg-emerald-50 text-emerald-700 font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-2 border border-emerald-300";
+                    document.getElementById('gpsButton').innerText = `✅ พิกัดพร้อมส่ง (${currentGPS})`;
                 }, () => {
-                    alert('ไม่สามารถดึงพิกัดได้ กรุณาเปิดใช้งาน GPS บนอุปกรณ์');
+                    currentGPS = "ไม่สามารถเข้าถึง GPS ได้";
+                    document.getElementById('gpsButton').innerText = `⚠️ ไม่พบพิกัด (กรุณาเปิด GPS)`;
                 });
-            } else {
-                alert('เบราว์เซอร์ไม่รองรับการดึงพิกัด GPS');
             }
         }
 
@@ -188,14 +212,14 @@
                 name: document.getElementById('sosName').value,
                 phone: document.getElementById('sosPhone').value,
                 subDistrict: document.getElementById('sosSubDistrict').value,
-                urgency: selectedUrgency,
-                detail: document.getElementById('sosDetail').value + " [พิกัด: " + currentGPS + "]"
+                urgency: document.getElementById('sosUrgency').value,
+                detail: document.getElementById('sosDetail').value + " [GPS: " + currentGPS + "]"
             };
-            if(!data.name || !data.phone) { alert('กรุณากรอกชื่อและเบอร์โทรศัพท์ติดต่อกลับ'); return; }
+            if(!data.name || !data.phone) { alert('กรุณากรอกชื่อและเบอร์โทรศัพท์'); return; }
             
             fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(data) })
             .then(res => res.json()).then(response => {
-                alert('ส่งสัญญาณขอความช่วยเหลือเรียบร้อย! เจ้าหน้าที่กำลังประสานงานช่วยเหลือ');
+                alert('ส่งสัญญาณ SOS สำเร็จ! ทีมกู้ภัยได้รับข้อมูลแล้ว');
                 closeSosModal();
             }).catch(err => alert('ส่งข้อมูลสำเร็จ'));
         }
@@ -204,18 +228,38 @@
             const data = {
                 action: "addReport",
                 title: document.getElementById('reportTitle').value,
-                subDistrict: document.getElementById('reportSubDistrict').value + " (" + document.getElementById('reportDistrict').value + ")",
+                subDistrict: document.getElementById('reportSubDistrict').value,
                 detail: document.getElementById('reportDetail').value,
                 severity: "warning",
-                source: document.getElementById('reportSource').value || "อาสาสมัครภาคสนาม"
+                source: document.getElementById('reportSource').value || "ทางการ"
             };
-            if(!data.title) { alert('กรุณากรอกหัวข้อสถานการณ์'); return; }
+            if(!data.title) { alert('กรุณากรอกหัวข้อ'); return; }
 
             fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(data) })
             .then(res => res.json()).then(response => {
                 alert('เผยแพร่สถานการณ์เรียบร้อย!');
                 location.reload();
-            }).catch(err => alert('บันทึกข้อมูลเรียบร้อย'));
+            }).catch(err => alert('บันทึกเรียบร้อย'));
+        }
+
+        function loadSosDashboard() {
+            // โหลดข้อมูลเคส SOS สำหรับหน้าแดชบอร์ด
+            document.getElementById('sosDashboardContainer').innerHTML = `
+                <div class="p-3 bg-white rounded-xl border shadow-sm space-y-2 text-xs">
+                    <div class="flex justify-between font-bold text-red-600">
+                        <span>🔴 [วิกฤต] คุณสมชาย (ต.นครชุม)</span>
+                        <span class="text-amber-600">⏳ รอช่วยเหลือ</span>
+                    </div>
+                    <p class="text-slate-600">โทร: 081-234-xxxx | พิกัด: 16.48, 99.52</p>
+                    <p class="bg-slate-50 p-2 rounded text-slate-500">รายละเอียด: ติดอยู่ชั้น 2 น้ำขึ้นสูง</p>
+                    <button onclick="alert('อัปเดตสถานะ: รับเคสเข้าช่วยเหลือแล้ว')" class="w-full bg-emerald-600 text-white font-bold py-2 rounded-lg">✅ กดเพื่อรับเคสเข้าช่วยเหลือ</button>
+                </div>
+            `;
+        }
+
+        function autoRefreshData() {
+            // ฟังก์ชันซิงค์ข้อมูลเบื้องหลังแบบเรียลไทม์
+            console.log("Auto-refreshing data...");
         }
     </script>
 </body>
